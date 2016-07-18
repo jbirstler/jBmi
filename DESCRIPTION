@@ -7,7 +7,7 @@ Description: This package calculates measures of weight, Z-scores, and
     based on criteria from the CDC and WHO.
 Depends:
     R (>= 3.3.0)
-License: GPL-3
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: knitr

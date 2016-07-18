@@ -1,0 +1,56 @@
+---
+title: "Fun with Data Vis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Fun with Data Vis}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+
+```{r, echo = FALSE, message = FALSE}
+library(jBmi)
+library(magrittr)
+library(dplyr)
+library(birk)
+library(ggplot2)
+library(scales)
+```
+
+```{r}
+breaks <- c(0, .01, .05, .1, .25, .5, .75, .9, .95, .99, 1)
+nhanes %>% filter(age <= 240) %>%
+  mutate(bmi = calcBMI(height, weight, age),
+         z = calcZScore(age, sex, bmi),
+         percentile = pnorm(z),
+         bin = cut(percentile, breaks)) %>%
+  mutate(Height = conv_unit(height, from = "m", to = "inch"),
+         Weight = conv_unit(weight, from = "kg", to = "lbs")) %>%
+  ggplot(data = .) +
+  geom_point(aes(x = Height, y = Weight, color = bin)) +
+  scale_color_brewer(palette = "RdYlBu") +
+  facet_grid(sex~.) + ylab("Weight (lbs)") +
+  scale_x_continuous(labels = function(l) paste0(floor(l/12), "\'", floor(l %% 12), "\""))
+```
+
+
+```{r}
+breaks <- c(0, .01, .05, .1, .25, .5, .75, .9, .95, .99, 1)
+nhanes %>% filter(age < 24) %>%
+  mutate(bmi = calcBMI(height, weight, age),
+         z = calcZScore(age, sex, bmi),
+         percentile = pnorm(z),
+         bin = cut(percentile, breaks)) %>%
+  mutate(Weight = conv_unit(weight, from = "kg", to = "lbs")) %>%
+  ggplot(data = .) +
+  geom_point(aes(x = age, y = Weight, color = bin)) +
+  scale_color_brewer(palette = "RdYlBu") +
+  facet_grid(sex~.) + ylab("Weight (lbs)")
+```
+
+```{r}
+nhanes %>% mutate(bmi = calcBMI(height, weight, age),
+                  z = calcZScore(age, sex, bmi),
+                  valid = isValid(height, weight, age, sex)) %>%
+  filter(!valid)
+```

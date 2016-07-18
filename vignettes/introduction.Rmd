@@ -1,0 +1,87 @@
+---
+title: "Introduction to jBmi with NHANES"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to jBmi with NHANES}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+
+```{r, echo = FALSE, message = FALSE}
+library(jBmi)
+library(magrittr)
+library(dplyr)
+library(birk)
+library(ggplot2)
+```
+
+## Data
+
+First, let's start with the built-in dataset, `nhanes`.
+
+```{r}
+nhanes
+```
+
+## Units
+
+Weight and height are in kilograms and meters, respectively. Age is in months. The calculations in this package are in those units.
+If your data are in other units, I recommend using `conv_unit()` in the `birk` package.
+
+```{r}
+nhanes %>% mutate(`age (yr)` = conv_unit(age, from = "mon", to = "yr"),
+                  `height (ft)` = conv_unit(height, from = "m", to = "inch"),
+                  `weight (lb)` = conv_unit(weight, from = "kg", to = "lbs"))
+```
+
+## Calculating BMI
+
+Sticking with metric, we can first calculate BMI. Note that the formula for BMI is simply:
+
+$$\frac{\text{weight (kg)}}{\text{height (m)}^2} = \frac{\text{weight (lb)}}{\text{height (in)}^2} \cdot 703$$
+
+However, the function `calcBMI()` takes an optional `age` argument.
+This is because BMI is not meaningful for children under 24 months old.
+If age is supplied, then weight-for-age will be calculated for ages less than 24 months.
+
+```{r}
+nhanes %>% mutate(type = ifelse(age < 24, "weight-for-age", "bmi"),
+                  bmi = calcBMI(height, weight, age))
+```
+
+Of course, BMI can still be calculated without considering age.
+
+```{r}
+nhanes %>% filter(age >= 24) %>%
+  mutate(bmi = calcBMI(height, weight))
+```
+
+BMI is essentially the same regardless of whether it was calculated using the metric or imperial formula.
+Any differences can be chalked up to the approximation in the conversion factor, 703.
+
+```{r}
+nhanes %>% filter(age >= 24) %>%
+  mutate(`bmi (metric)` = calcBMI(height, weight),
+         `height (ft)` = conv_unit(height, from = "m", to = "inch"),
+         `weight (lb)` = conv_unit(weight, from = "kg", to = "lbs"),
+         `bmi (imperial)` =  `weight (lb)` / `height (ft)`^2 * 703,
+         Difference = `bmi (metric)` - `bmi (imperial)`) %>%
+  select(contains("bmi"), Difference)
+```
+
+## Calculating Z-Score
+
+Z-Score is an intermediate statistic to percentile, which is more commonly used.
+Z-Scores are calculated using parameters provided by the CDC. They're available for various metrics but
+the common protocol is to use weight-for-age for children under 24 months, and BMI for children 24 to 240 months (2 to 20 years).
+CDC Z-Scores, growth charts, and percentiles are not made available for adults. 
+
+Z-Scores depend on the measurement (either BMI or weight-for-age), age, and sex.
+
+```{r}
+nhanes %>% filter(age <= 240) %>%
+  mutate(bmi = calcBMI(height, weight, age),
+         z = calcZScore(age, sex, bmi),
+         percentile = pnorm(z))
+```

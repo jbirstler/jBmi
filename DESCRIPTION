@@ -1,18 +1,17 @@
 Package: jBmi
-Title: Calculate measures of weight, Z-scores, and percentiles
+Title: Calculate BMI and Z-Scores based on CDC growth charts
 Version: 0.0.0.9000
 Authors@R: person("Jen", "Birstler", email = "birstler@wisc.edu", role = c("aut", "cre"))
-Description: This package calculates measures of weight, Z-scores, and
-    percentiles. Measurements of weight for persons under 20 years are calculated
-    based on criteria from the CDC and WHO.
+Description: This package calculate BMI and Z-Scores based on CDC growth charts.
 Depends:
     R (>= 3.3.0)
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: knitr
 Suggests:
-    magrittr,
-    birk
+    birk,
+    dplyr,
+    knitr,
+    magrittr
 RoxygenNote: 5.0.1
 VignetteBuilder: knitr

@@ -1,9 +1,9 @@
 #' Calculate Z-score of BMI or weight-for-age
 #'
-#' @param age Age in months. Must be integer-values from 0 to 240.
+#' @param age Age in months. Must be integer-values from 0 to 240
 #' @param sex Sex. Must be "Male"/"Female"
-#' @param bmi BMI in kg/m^2 or weight-for-age in kg.
-#' @return A vector of Z-Scores.
+#' @param bmi BMI in kg/m^2 or weight-for-age in kg
+#' @return A vector of Z-Scores
 #' @seealso \code{\link{chart}} for information about how Z-Scores and percentiles are calculated.
 #' @export
 #' @examples

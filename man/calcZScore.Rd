@@ -7,14 +7,14 @@
 calcZScore(age, sex, bmi)
 }
 \arguments{
-\item{age}{Age in months. Must be integer-values from 0 to 240.}
+\item{age}{Age in months. Must be integer-values from 0 to 240}
 
 \item{sex}{Sex. Must be "Male"/"Female"}
 
-\item{bmi}{BMI in kg/m^2 or weight-for-age in kg.}
+\item{bmi}{BMI in kg/m^2 or weight-for-age in kg}
 }
 \value{
-A vector of Z-Scores.
+A vector of Z-Scores
 }
 \description{
 Calculate Z-score of BMI or weight-for-age

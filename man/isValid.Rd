@@ -2,27 +2,36 @@
 % Please edit documentation in R/isValid.R
 \name{isValid}
 \alias{isValid}
-\title{Validate weight measurements by common protocols}
+\title{Validate data}
 \usage{
-isValid(height, weight, age, sex)
+isValid(age, bmi, zscore)
 }
 \arguments{
-\item{height}{Height in meters}
-
-\item{weight}{Weight in kilograms}
-
 \item{age}{Age in months}
 
-\item{sex}{Sex}
+\item{bmi}{BMI in kg/m^2 or weight-for-age in kg}
+
+\item{zscore}{Z-Score of BMI or weight-for-age}
 }
 \value{
-A logical vectore
+A logical vector that answers the question, are the data validated?
 }
 \description{
-Validate weight measurements by common protocols
+The function returns `FALSE` when:
+}
+\details{
+\itemize{
+  \item Age is 24 months or greater and BMI is less than 6 or greater than 100
+  \item Age is between 24 and 240 months inclusively, and Z-Score is less than -4 or greater than 5
+  \item Age is less than 24 months and Z-Score is less than -6 or greater than 5
+}
 }
 \examples{
 data(nhanes)
-with(nhanes, calcBMI(height, weight, age))
+nhanes$bmi <- with(nhanes, calcBMI(height, weight, age))
+nhanes$zscore <- with(nhanes, calcZScore(age, sex, bmi))
+nhanes$valid <- with(nhanes, isValid(age, bmi, zscore))
+table(nhanes$valid)
+nhanes[!nhanes$valid,]
 }
 

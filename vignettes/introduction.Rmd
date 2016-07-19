@@ -10,15 +10,13 @@ vignette: >
 
 ```{r, echo = FALSE, message = FALSE}
 library(jBmi)
-library(magrittr)
 library(dplyr)
 library(birk)
-library(ggplot2)
 ```
 
 ## Data
 
-First, let's start with the built-in dataset, `nhanes`.
+First, let's start with the dataset, `jBmi::nhanes`.
 
 ```{r}
 nhanes
@@ -31,7 +29,7 @@ If your data are in other units, I recommend using `conv_unit()` in the `birk` p
 
 ```{r}
 nhanes %>% mutate(`age (yr)` = conv_unit(age, from = "mon", to = "yr"),
-                  `height (ft)` = conv_unit(height, from = "m", to = "inch"),
+                  `height (in)` = conv_unit(height, from = "m", to = "inch"),
                   `weight (lb)` = conv_unit(weight, from = "kg", to = "lbs"))
 ```
 
@@ -57,7 +55,7 @@ nhanes %>% filter(age >= 24) %>%
   mutate(bmi = calcBMI(height, weight))
 ```
 
-BMI is essentially the same regardless of whether it was calculated using the metric or imperial formula.
+BMI is essentially the same regardless of whether it was calculated using the metric or US units formula.
 Any differences can be chalked up to the approximation in the conversion factor, 703.
 
 ```{r}
@@ -65,8 +63,8 @@ nhanes %>% filter(age >= 24) %>%
   mutate(`bmi (metric)` = calcBMI(height, weight),
          `height (ft)` = conv_unit(height, from = "m", to = "inch"),
          `weight (lb)` = conv_unit(weight, from = "kg", to = "lbs"),
-         `bmi (imperial)` =  `weight (lb)` / `height (ft)`^2 * 703,
-         Difference = `bmi (metric)` - `bmi (imperial)`) %>%
+         `bmi (US)` =  `weight (lb)` / `height (ft)`^2 * 703,
+         Difference = `bmi (metric)` - `bmi (US)`) %>%
   select(contains("bmi"), Difference)
 ```
 
@@ -82,6 +80,40 @@ Z-Scores depend on the measurement (either BMI or weight-for-age), age, and sex.
 ```{r}
 nhanes %>% filter(age <= 240) %>%
   mutate(bmi = calcBMI(height, weight, age),
-         z = calcZScore(age, sex, bmi),
-         percentile = pnorm(z))
+         zscore = calcZScore(age, sex, bmi),
+         percentile = pnorm(zscore))
+```
+
+## Detection of Outliers and Data to Review
+
+The `isValid()` function validates the data by flagging data that does meets certain criteria. This function should be used to aid in *reviewing* data, not blindly *removing* data. `isValid()` returns a logical vector and answers the question, "Can I assume this data is valid?" The function returns `FALSE` when:
+
+- Age is 24 months or greater and BMI is less than 6 or greater than 100
+- Age is between 24 and 240 months inclusively, and Z-Score is less than -4 or greater than 5
+- Age is less than 24 months and Z-Score is less than -6 or greater than 5
+
+These criteria are dependent on age, BMI, and Z-Score, therefore `isValid()` is a function of `age`, `bmi`, and `zscore`.
+
+```{r}
+nhanes %>% mutate(bmi = calcBMI(height, weight, age),
+                  zscore = calcZScore(age, sex, bmi),
+                  percentile = pnorm(zscore)) %>%
+  filter(!isValid(age, bmi, zscore))
+```
+
+Data of 6 babies were flagged for review. Based on the percentiles, all 6 were heavy for their age.
+Additional variables and notes from the NHANES data set should be pulled.
+Are the recumbent lengths and head circumferences consistent with the weights?
+Are those 5 newborns or was there an error recording the age?
+Actually, I suspect that these weights were erroneously recorded in lbs instead of kg.
+
+```{r}
+nhanes %>% mutate(bmi = calcBMI(height, weight, age),
+                  zscore = calcZScore(age, sex, bmi),
+                  percentile = pnorm(zscore)) %>%
+  filter(!isValid(age, bmi, zscore)) %>%
+  mutate(weight = conv_unit(weight, from = "lbs", to = "kg"),
+         bmi = calcBMI(height, weight, age),
+         zscore = calcZScore(age, sex, bmi),
+         percentile = pnorm(zscore))
 ```

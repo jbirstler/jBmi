@@ -64,4 +64,4 @@ jBmi uses metric units and age in months. If your data are in other units, I rec
 
 My name is **J**en. This package is about body mass index, **BMI**. The first programming language I used was JavaScript, in which I primarily used the **jQ**uery library. Everything I write is **jBirscript**.
 
-$$\text{jBmi} = \text{lowerCamelCase}(\text{Jen} + \text{BMI})$$
+jBmi = lowerCamelCase(Jen + BMI)

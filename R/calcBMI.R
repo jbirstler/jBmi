@@ -18,9 +18,5 @@ calcBMI <- function(height, weight, age = rep(NA, length = length(height))) {
     warning("Arguments must be the same length.")
   }
   
-  if (suppressWarnings(min(age, na.rm = TRUE)) < 24) {
-    message("BMI not meaningful for under 24 months - returning weight-for-age for those persons.")
-  }
-  
   ifelse((age >= 24) | (is.na(age)), weight/height^2, weight)
 }
